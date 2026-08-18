@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\ApafaAttendanceController;
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -21,4 +23,18 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+});
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+
+    // Rutas de Asistencia APAFA
+    Route::get('/apafa/asistencia', [ApafaAttendanceController::class, 'index'])->name('apafa.attendance.index');
+    Route::post('/apafa/asistencia/dni', [ApafaAttendanceController::class, 'registerByDni'])->name('apafa.attendance.dni');
 });

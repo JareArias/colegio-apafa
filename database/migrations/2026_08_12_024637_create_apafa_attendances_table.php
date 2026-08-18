@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignId('student_id')->nullable()->constrained()->onDelete('set null'); // Hijo representado
             $table->enum('status', ['presente', 'tarde', 'ausente', 'justificado'])->default('presente');
             $table->enum('registered_by', ['self_qr', 'manual_scanner', 'dni'])->default('manual_scanner');
-
+            $table->timestamp('scanned_at')->nullable();
+            
             $table->timestamps();
         });
     }
