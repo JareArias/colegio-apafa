@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "build": "^0.1.4",
+        "html5-qrcode": "^2.3.8",
         "npm": "^11.19.0",
         "run": "^1.5.0"
     }

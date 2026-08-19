@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\ApafaAttendanceController;
+use App\Http\Controllers\ApafaMeetingController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -37,4 +38,14 @@ Route::middleware([
     // Rutas de Asistencia APAFA
     Route::get('/apafa/asistencia', [ApafaAttendanceController::class, 'index'])->name('apafa.attendance.index');
     Route::post('/apafa/asistencia/dni', [ApafaAttendanceController::class, 'registerByDni'])->name('apafa.attendance.dni');
+
+    
+// Gestión de Reuniones APAFA
+Route::get('/apafa/reuniones', [ApafaMeetingController::class, 'index'])->name('apafa.meetings.index');
+Route::post('/apafa/reuniones', [ApafaMeetingController::class, 'store'])->name('apafa.meetings.store');
+Route::patch('/apafa/reuniones/{meeting}/toggle', [ApafaMeetingController::class, 'toggleStatus'])->name('apafa.meetings.toggle');
 });
+
+Route::post('/apafa/asistencia/qr', [ApafaAttendanceController::class, 'registerByQr'])->name('apafa.attendance.qr');
+Route::get('/apafa/asistencia/exportar-pdf/{meeting}', [ApafaAttendanceController::class, 'exportPdf'])->name('apafa.attendance.export.pdf');
+
