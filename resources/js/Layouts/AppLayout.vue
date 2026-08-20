@@ -55,6 +55,9 @@ const logout = () => {
                                  <NavLink :href="route('apafa.meetings.index')" :active="route().current('apafa.meetings.index')">
                                     Gestión de Reuniones
                                 </NavLink>
+                                <NavLink :href="route('apafa.parent.carnet')" :active="route().current('apafa.parent.carnet')">
+                                    Mi Carnet Digital
+                                </NavLink>
                             </div>
                         </div>
 

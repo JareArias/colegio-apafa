@@ -16,6 +16,10 @@ class ApafaMeeting extends Model
         'is_active',
     ];
 
+    protected $casts = [
+    'is_active' => 'boolean',
+    ];
+
     // Relación: Una reunión tiene muchas asistencias
     public function attendances()
     {
