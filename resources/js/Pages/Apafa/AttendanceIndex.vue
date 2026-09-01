@@ -14,9 +14,8 @@ const page = usePage();
 const selectedMeeting = ref(props.selectedMeetingId || (props.meetings.length > 0 ? props.meetings[0].id : ''));
 const dniInput = ref(null);
 const searchFilter = ref('');
-const activeTab = ref('dni'); // 'dni' o 'qr'
+const activeTab = ref('dni');
 
-// Lógica de Escáner QR
 const scannerActive = ref(false);
 let html5QrCode = null;
 
@@ -31,12 +30,16 @@ const formQr = useForm({
 });
 
 const changeMeeting = () => {
-    router.get(route('apafa.attendance.index'), { meeting_id: selectedMeeting.value }, { preserveState: true });
+    router.get(route('apafa.attendances.index'), { meeting_id: selectedMeeting.value }, { preserveState: true });
 };
 
 const submitDni = () => {
+    // Asegurar el ID de la reunión seleccionada actualmente
     formDni.meeting_id = selectedMeeting.value;
-    formDni.post(route('apafa.attendance.dni'), {
+
+    // Usar la ruta exacta POST
+    formDni.post(route('apafa.attendances.dni'), {
+        preserveScroll: true,
         onSuccess: () => {
             formDni.dni = '';
             if (dniInput.value) dniInput.value.focus();
@@ -44,7 +47,6 @@ const submitDni = () => {
     });
 };
 
-// Iniciar Cámara para QR
 const startScanner = async () => {
     scannerActive.value = true;
     setTimeout(async () => {
@@ -54,12 +56,9 @@ const startScanner = async () => {
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
-                    // Al detectar lectura QR exitosa:
                     onQrScanned(decodedText);
                 },
-                (errorMessage) => {
-                    // Errores menores de cuadro no detectado (ignorar)
-                }
+                () => {}
             );
         } catch (err) {
             console.error("Error al iniciar cámara:", err);
@@ -67,7 +66,6 @@ const startScanner = async () => {
     }, 300);
 };
 
-// Detener Cámara
 const stopScanner = async () => {
     if (html5QrCode && scannerActive.value) {
         try {
@@ -93,16 +91,16 @@ const onQrScanned = (qrCodeText) => {
     formQr.meeting_id = selectedMeeting.value;
     formQr.qr_code = qrCodeText;
     
-    // Pausamos momentáneamente el escaneo para procesar
     if (html5QrCode) html5QrCode.pause();
 
-    formQr.post(route('apafa.attendance.qr'), {
+    formQr.post(route('apafa.attendances.qr'), {
+        preserveScroll: true,
         onFinish: () => {
             setTimeout(() => {
                 if (html5QrCode && scannerActive.value) {
                     html5QrCode.resume();
                 }
-            }, 1500); // Espera 1.5s antes de volver a escanear otro
+            }, 1500);
         }
     });
 };
@@ -140,12 +138,15 @@ const formatTime = (dateString) => {
         <div class="py-8">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 
-                <!-- Alertas Flash -->
+                <!-- Alertas Flash y Errores de Validación -->
                 <div v-if="page.props.flash && page.props.flash.success" class="p-4 bg-green-100 border-l-4 border-green-500 text-green-700 font-semibold rounded shadow-sm flex items-center justify-between">
                     <span>{{ page.props.flash.success }}</span>
                 </div>
                 <div v-if="page.props.flash && page.props.flash.error" class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 font-semibold rounded shadow-sm">
                     {{ page.props.flash.error }}
+                </div>
+                <div v-if="$page.props.errors.dni" class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 font-semibold rounded shadow-sm">
+                    {{ $page.props.errors.dni }}
                 </div>
                 <div v-if="formQr.errors.qr" class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 font-semibold rounded shadow-sm">
                     {{ formQr.errors.qr }}
@@ -176,12 +177,14 @@ const formatTime = (dateString) => {
                         <!-- Selector de Modo -->
                         <div class="flex border-b mb-6">
                             <button 
+                                type="button"
                                 @click="switchTab('dni')" 
                                 :class="['w-1/2 py-2 font-bold text-sm border-b-2 text-center transition', activeTab === 'dni' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600']"
                             >
                                 Por DNI
                             </button>
                             <button 
+                                type="button"
                                 @click="switchTab('qr')" 
                                 :class="['w-1/2 py-2 font-bold text-sm border-b-2 text-center transition', activeTab === 'qr' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600']"
                             >
@@ -239,7 +242,7 @@ const formatTime = (dateString) => {
                             
                             <div class="flex items-center gap-2">
                                 <a 
-                                    :href="route('apafa.attendance.export.pdf', selectedMeeting)" 
+                                    :href="route('apafa.attendances.export.pdf', selectedMeeting)" 
                                     target="_blank"
                                     class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-xs transition flex items-center gap-1 shadow"
                                 >
@@ -263,6 +266,7 @@ const formatTime = (dateString) => {
                                         <th class="p-3">Padre / Apoderado</th>
                                         <th class="p-3">DNI</th>
                                         <th class="p-3">Hora Ingreso</th>
+                                        <th class="p-3">Estado</th>
                                         <th class="p-3">Método</th>
                                     </tr>
                                 </thead>
@@ -272,6 +276,18 @@ const formatTime = (dateString) => {
                                         <td class="p-3 font-semibold text-gray-800">{{ item.user.name }}</td>
                                         <td class="p-3 font-mono">{{ item.user.dni }}</td>
                                         <td class="p-3 font-medium text-indigo-600">{{ formatTime(item.scanned_at) }}</td>
+                                        <!-- Estado Puntual / Tardanza -->
+                                        <td class="p-3">
+                                            <span 
+                                                :class="[
+                                                    'px-2 py-1 text-xs font-bold rounded-full',
+                                                    item.status === 'late' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+                                                ]"
+                                            >
+                                                {{ item.status === 'late' ? 'TARDANZA' : 'PUNTUAL' }}
+                                            </span>
+                                        </td>
+                                        <!-- Método de Registro -->
                                         <td class="p-3">
                                             <span 
                                                 :class="[
@@ -284,7 +300,7 @@ const formatTime = (dateString) => {
                                         </td>
                                     </tr>
                                     <tr v-if="filteredAttendances.length === 0">
-                                        <td colspan="5" class="p-6 text-center text-gray-400">
+                                        <td colspan="6" class="p-6 text-center text-gray-400">
                                             No hay registros de asistencia para mostrar.
                                         </td>
                                     </tr>

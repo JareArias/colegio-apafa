@@ -73,4 +73,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Student::class, 'parent_student');
     }
+    
+    public function fines()
+    {
+        return $this->hasMany(ApafaFine::class, 'user_id');
+    }
 }

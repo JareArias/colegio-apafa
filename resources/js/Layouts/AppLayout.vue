@@ -55,8 +55,15 @@ const logout = () => {
                                  <NavLink :href="route('apafa.meetings.index')" :active="route().current('apafa.meetings.index')">
                                     Gestión de Reuniones
                                 </NavLink>
+                                <!-- Nuevo enlace agregado para el Padrón de Padres / Carga Masiva -->
+                                <NavLink :href="route('apafa.parents.index')" :active="route().current('apafa.parents.index')">
+                                    Padrón de Padres
+                                </NavLink>
                                 <NavLink :href="route('apafa.parent.carnet')" :active="route().current('apafa.parent.carnet')">
                                     Mi Carnet Digital
+                                </NavLink>
+                                <NavLink :href="route('apafa.fines.index')" :active="route().current('apafa.fines.index')">
+                                    Multas
                                 </NavLink>
                             </div>
                         </div>

@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
 
-            $table->string('dni')->unique();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('grade');   // Ej: "1er Grado", "5to Sec"
-            $table->string('section'); // Ej: "A", "B"
-            
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('dni', 8)->unique();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('name')->nullable();
+            $table->string('grade');
+            $table->string('section');
+            $table->string('level')->default('Secundaria');
+
             $table->timestamps();
         });
     }

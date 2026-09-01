@@ -10,10 +10,13 @@ class ApafaMeeting extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
+       'title',
         'description',
         'meeting_date',
+        'start_time',
+        'tolerance_minutes',
         'is_active',
+        'status',
     ];
 
     protected $casts = [
@@ -24,5 +27,11 @@ class ApafaMeeting extends Model
     public function attendances()
     {
         return $this->hasMany(ApafaAttendance::class, 'apafa_meeting_id');
+    }
+
+    //Relacion de pagos
+    public function fines()
+    {
+        return $this->hasMany(ApafaFine::class, 'apafa_meeting_id');
     }
 }
